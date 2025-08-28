@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Auction Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-area {
+            padding: 30px;
+        }
+
+        .sentence-card {
+            background: #f8f9ff;
+            border: 2px solid #e1e5f7;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sentence-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .sentence-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .sentence-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-correct {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .btn-incorrect {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .answer {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .answer.correct {
+            background: #d5f4e6;
+            color: #1e8449;
+            border-left: 4px solid #27ae60;
+        }
+
+        .answer.incorrect {
+            background: #fadbd8;
+            color: #c0392b;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        .score-board {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Grammar Auction</h1>
+            <p>Bid on whether these sentences are grammatically correct!</p>
+        </div>
+
+        <div class="game-area">
+            <div class="score-board">
+                <h3>💰 Your Score: <span id="score">0</span> points</h3>
+            </div>
+
+            <div id="sentences"></div>
+
+            <button class="btn reset-btn" onclick="resetGame()">🔄 Reset Game</button>
+        </div>
+    </div>
+
+    <script>
+        const sentences = [
+            {
+                text: "I go to school every day.",
+                correct: true,
+                explanation: "Great! This is correct present simple for daily habits."
+            },
+            {
+                text: "She don't like pizza.",
+                correct: false,
+                explanation: "Should be 'doesn't' - use 'doesn't' with he/she/it"
+            },
+            {
+                text: "My mom buyed me a new bike yesterday.",
+                correct: false,
+                explanation: "Should be 'bought' - this is an irregular past tense verb"
+            },
+            {
+                text: "What you doing right now?",
+                correct: false,
+                explanation: "Should be 'What are you doing?' - need 'are' in questions"
+            },
+            {
+                text: "There are two cat in the garden.",
+                correct: false,
+                explanation: "Should be 'cats' - use plural form with numbers"
+            },
+            {
+                text: "We played soccer at recess.",
+                correct: true,
+                explanation: "Perfect! Correct past tense of 'play'"
+            },
+            {
+                text: "How many pencil do you have?",
+                correct: false,
+                explanation: "Should be 'pencils' - use plural after 'How many'"
+            },
+            {
+                text: "My teacher is very nice.",
+                correct: true,
+                explanation: "Excellent! This sentence is completely correct."
+            },
+            {
+                text: "Where you live?",
+                correct: false,
+                explanation: "Should be 'Where do you live?' - need 'do' in questions"
+            },
+            {
+                text: "I am eating lunch right now.",
+                correct: true,
+                explanation: "Great! Correct present continuous for things happening now"
+            },
+            {
+                text: "He have a red backpack.",
+                correct: false,
+                explanation: "Should be 'has' - use 'has' with he/she/it"
+            },
+            {
+                text: "We goed to the zoo last weekend.",
+                correct: false,
+                explanation: "Should be 'went' - this is an irregular past tense verb"
+            },
+            {
+                text: "Who is your best friend?",
+                correct: true,
+                explanation: "Perfect! Correct question with 'Who'"
+            },
+            {
+                text: "There is three apple on the table.",
+                correct: false,
+                explanation: "Should be 'are three apples' - plural subject needs 'are' and plural noun"
+            },
+            {
+                text: "I can swim very good.",
+                correct: false,
+                explanation: "Should be 'well' - use adverb 'well' not adjective 'good'"
+            }
+        ];
+
+        let currentSentence = 0;
+        let score = 0;
+
+        function renderSentences() {
+            const container = document.getElementById('sentences');
+            container.innerHTML = '';
+
+            sentences.forEach((sentence, index) => {
+                const card = document.createElement('div');
+                card.className = 'sentence-card';
+                card.innerHTML = `
+                    <div class="sentence-number">${index + 1}</div>
+                    <div class="sentence-text">${sentence.text}</div>
+                    <div class="buttons">
+                        <button class="btn btn-correct" onclick="checkAnswer(${index}, true)">
+                            ✅ Correct
+                        </button>
+                        <button class="btn btn-incorrect" onclick="checkAnswer(${index}, false)">
+                            ❌ Incorrect
+                        </button>
+                    </div>
+                    <div class="answer" id="answer-${index}">
+                        <div class="explanation" id="explanation-${index}"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswer(index, userAnswer) {
+            const sentence = sentences[index];
+            const answerDiv = document.getElementById(`answer-${index}`);
+            const explanationDiv = document.getElementById(`explanation-${index}`);
+            
+            // Disable buttons for this sentence
+            const buttons = answerDiv.parentElement.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            // Show answer
+            answerDiv.style.display = 'block';
+            
+            if (userAnswer === sentence.correct) {
+                answerDiv.className = 'answer correct';
+                answerDiv.innerHTML = `<strong>✅ Correct!</strong><div class="explanation">${sentence.explanation}</div>`;
+                score += 10;
+            } else {
+                answerDiv.className = 'answer incorrect';
+                answerDiv.innerHTML = `<strong>❌ Wrong!</strong><div class="explanation">${sentence.explanation}</div>`;
+            }
+            
+            // Update score
+            document.getElementById('score').textContent = score;
+            
+            // Add visual feedback to buttons
+            buttons.forEach(btn => {
+                if ((btn.textContent.includes('Correct') && sentence.correct) || 
+                    (btn.textContent.includes('Incorrect') && !sentence.correct)) {
+                    btn.style.border = '3px solid #27ae60';
+                    btn.style.boxShadow = '0 0 10px rgba(39, 174, 96, 0.5)';
+                } else if ((btn.textContent.includes('Correct') && userAnswer === true) || 
+                          (btn.textContent.includes('Incorrect') && userAnswer === false)) {
+                    if (userAnswer !== sentence.correct) {
+                        btn.style.border = '3px solid #e74c3c';
+                        btn.style.boxShadow = '0 0 10px rgba(231, 76, 60, 0.5)';
+                    }
+                }
+            });
+        }
+
+        function resetGame() {
+            score = 0;
+            document.getElementById('score').textContent = score;
+            renderSentences();
+        }
+
+        // Initialize game
+        renderSentences();
+    </script>
+</body>
+</html>
